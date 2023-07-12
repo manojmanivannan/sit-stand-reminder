@@ -10,7 +10,7 @@ This application cycles through 3 modes every 30 minutes. At the start of the ho
 3. Walk  -  2 minutes
 
 ## Getting Started
-To install this, you need to generate an exe file either using py2exe or PyInstaller.
+To install this, you need to generate an exe file either using py2exe or PyInstaller. You can install it using `pip install py2exe` or `pip install pyinstaller`
 
 ### Installing
 #### Using PyInstaller (recommended)

@@ -26,5 +26,5 @@ jobs:
 
     - uses: actions/upload-artifact@v3
       with:
-        name: sit-stand-reminder.exe
+        name: sit-stand-reminder
         path: ./dist/windows/sit_stand_reminder.exe

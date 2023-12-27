@@ -34,7 +34,7 @@ jobs:
       id: update-readme
       run: |
         echo "Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }} and Run ID is ${{ github.run_id }}"
-        sed -i "s#\[sit-stand-reminder.exe.*#[sit-stand-reminder.exe](https://github.com/manojmanivannan/sit-stand-reminder/actions/runs/${{ github.run_id }}/artifacts/${{ steps.artifact-upload-step.outputs.artifact-id }})" README.md
+        sed -i "s#\[sit-stand-reminder.exe.*#[sit-stand-reminder.exe](https://github.com/manojmanivannan/sit-stand-reminder/actions/runs/${{ github.run_id }}/artifacts/${{ steps.artifact-upload-step.outputs.artifact-id }})#" README.md
 
     - uses: EndBug/add-and-commit@v9
       with:

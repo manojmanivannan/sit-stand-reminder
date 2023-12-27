@@ -24,7 +24,12 @@ jobs:
       with:
         path: .
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
+      id: artifact-upload-step
       with:
         name: sit-stand-reminder
         path: ./dist/windows/sit_stand_reminder.exe
+    
+    - name: Output Artifact ID
+      id: output-artifact-id
+      run: echo "Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}"

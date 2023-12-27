@@ -36,6 +36,6 @@ jobs:
         echo "Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }} and Run ID is ${{ github.run_id }}"
         sed -i "s#\[sit-stand-reminder.exe.*#[sit-stand-reminder.exe](https://github.com/manojmanivannan/sit-stand-reminder/actions/runs/${{ github.run_id }}/artifacts/${{ steps.artifact-upload-step.outputs.artifact-id }})#" README.md
 
-    - uses: EndBug/add-and-commit@v9
+    - uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        default_author: github_actions
+        commit_message: Update README

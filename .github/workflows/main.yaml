@@ -32,4 +32,4 @@ jobs:
     
     - name: Output Artifact ID
       id: output-artifact-id
-      run: echo "Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}"
+      run: echo "Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }} and Run ID is ${{ github.run_id }}"

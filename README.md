@@ -23,7 +23,7 @@ To install this, you need to generate an exe file either using py2exe or PyInsta
 ### Downloading the Artifact
 You can directly get the latest exe file from the artifact sections under the Actions or from below
 
-[sit-stand-reminder.exe](https://github.com/manojmanivannan/sit-stand-reminder/actions/runs/7339319582/artifacts/1136527622)
+[sit-stand-reminder.exe](https://github.com/manojmanivannan/sit-stand-reminder/actions/runs/7339331430/artifacts/1136530779)
 
 ### Executing program
 

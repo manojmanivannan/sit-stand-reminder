@@ -21,7 +21,10 @@ To install this, you need to generate an exe file either using py2exe or PyInsta
 * `python setup.py py2exe`
 
 ### Downloading the Artifact
-Or, You can directly get the exe file from the artifact sections under the Actions [here](https://github.com/manojmanivannan/sit-stand-reminder/actions)
+Or, You can directly get the latest exe file from the artifact sections under the Actions.
+
+[sit-stand-reminder.exe](https://github.com/manojmanivannan/sit-stand-reminder/actions/runs/RUN_ID/artifacts/ARTIFACT_ID)
+
 ### Executing program
 
 Either case, your exe will be generated under `dist` folder under the project directory. You can create a shortcut and place this in your windows start up folder.

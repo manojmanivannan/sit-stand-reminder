@@ -1,4 +1,5 @@
 from datetime import datetime
+import winsound
 import easygui
 from time import sleep
 import sys, os
@@ -19,6 +20,7 @@ ignored_sit_down_counter, ignored_counter_stand_up = 0,0
 
 def Mbox(title="Health Reminder", text="", style=0,image=None):
     # return ctypes.windll.user32.MessageBoxW(0, text, title, style)
+   winsound.Beep(frequency=4000, duration=500)
 
    try:
       response = easygui.ynbox(text+

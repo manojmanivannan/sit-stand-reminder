@@ -36,7 +36,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: "Sit-Stand-Reminder ${{ env.TAG_NAME }}"
+          name: "${{ env.TAG_NAME }}"
           body: "Release ${{ env.TAG_NAME }} of Sit-Stand-Reminder."
           files: ./dist/windows/sit_stand_reminder.exe
           draft: false

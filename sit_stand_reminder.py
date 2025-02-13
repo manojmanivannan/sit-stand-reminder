@@ -1,78 +1,124 @@
-from datetime import datetime
+import os
+import sys
 import winsound
-import easygui
+import tkinter as tk
+from datetime import datetime
 from time import sleep
-import sys, os
+from PIL import Image, ImageTk
 
-try:
-   bundle_dir = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
-except NameError:
-   bundle_dir = os.getcwd()
+def get_bundle_dir() -> str:
+    """Returns the directory where bundled assets are stored."""
+    try:
+        return getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
+    except NameError:
+        return os.getcwd()
 
-sit_image = os.path.abspath(os.path.join(bundle_dir,'images/sit_down.png'))
-stand_image = os.path.abspath(os.path.join(bundle_dir,'images/stand_up.png'))
-walk_image  = os.path.abspath(os.path.join(bundle_dir,'images/walk.png'))
+# Asset paths (images and sounds)
+BUNDLE_DIR = get_bundle_dir()
+assets = {
+    "SIT DOWN": {
+        "image": os.path.join(BUNDLE_DIR, 'images/sit_down.png'),
+        "audio": os.path.join(BUNDLE_DIR, 'audio/sit.wav')
+    },
+    "STAND UP": {
+        "image": os.path.join(BUNDLE_DIR, 'images/stand_up.png'),
+        "audio": os.path.join(BUNDLE_DIR, 'audio/stand.wav')
+    },
+    "WALK": {
+        "image": os.path.join(BUNDLE_DIR, 'images/walk.png'),
+        "audio": os.path.join(BUNDLE_DIR, 'audio/walk.wav')
+    }
+}
 
-cur_hour = int(datetime.now().hour)
-cur_minute = int(datetime.now().minute)
-counter_sit_down, counter_stand_up = 0,0
-ignored_sit_down_counter, ignored_counter_stand_up = 0,0
+# Counters for reminders
+counters = {
+    "SIT DOWN": {"completed": 0, "ignored": 0},
+    "STAND UP": {"completed": 0, "ignored": 0},
+    "WALK": {"completed": 0, "ignored": 0}
+}
 
-def Mbox(title="Health Reminder", text="", style=0,image=None):
-    # return ctypes.windll.user32.MessageBoxW(0, text, title, style)
-   winsound.Beep(frequency=4000, duration=500)
+def play_audio(title: str):
+    """Plays the corresponding audio alert for a given reminder title."""
+    winsound.PlaySound(assets[title]["audio"], winsound.SND_FILENAME)
 
-   try:
-      response = easygui.ynbox(text+
-                        f"\nSat down {counter_sit_down} times"+
-                        f"\nStood up {counter_stand_up} times"+
-                        f"\nIgnored to sit {ignored_sit_down_counter} times"+
-                        f"\nIgnored to stand {ignored_counter_stand_up} times", 
-                        title, ('Done', 'Skip'),
-                        image=image)
-   except AssertionError:
-      return Mbox(title=title, text=text, style=style, image=image)
-   
-   return response 
+def show_reminder(title: str):
+    """Displays a reminder popup with auto-close after 60 seconds."""
+    play_audio(title)
 
+    root = tk.Tk()
+    root.title(title)
+    root.geometry("400x600")
+    root.resizable(False, False)
+    
+    # Load Image
+    img = Image.open(assets[title]["image"]).resize((200, 400), Image.Resampling.LANCZOS)
+    img_tk = ImageTk.PhotoImage(img)
 
-# make the script run in loop
-# 20 minutes of sitting, 
-# 8 minutes of standing and 
-# 2 minutes of light walk
+    # UI Elements
+    label = tk.Label(root, text=f"{title} Reminder!", font=("Arial", 14, "bold"))
+    label.pack(pady=10)
 
-while True:
+    image_label = tk.Label(root, image=img_tk)
+    image_label.pack()
 
-   sleep(1)
+    message = (
+       f"{'Sat down':<20}{counters['SIT DOWN']['completed']:>2} times\n"
+       f"{'Stood up':<20}{counters['STAND UP']['completed']:>2} times\n"
+       f"{'Ignored sitting':<20}{counters['SIT DOWN']['ignored']:2} times\n"
+       f"{'Ignored standing':<17}{counters['STAND UP']['ignored']:>2} times"
+    )
+    
+    msg_label = tk.Label(root, text=message, justify='left', font=("Arial", 10))
+    msg_label.pack(pady=5)
 
-   if int(datetime.now().minute) == 0 or int(datetime.now().minute) == 30 :
-      if Mbox(title="SIT DOWN",image=sit_image):
-         # print('Sat down')
-         counter_sit_down+=1
-         sleep(61)
-      else:
-         # print('Ignored to sit down')
-         ignored_sit_down_counter+=1
-         sleep(61)
+    response = {"clicked": None}  # Track user response
 
-   if int(datetime.now().minute) == 20 or int(datetime.now().minute) == 50 :
-      if Mbox(title="STAND UP",image=stand_image):
-         # print('Stood up')
-         counter_stand_up+=1
-         sleep(61)
-      else:
-         # print('Ignored to stand up')
-         ignored_counter_stand_up+=1
-         sleep(61)
+    def mark_done():
+        response["clicked"] = "Done"
+        root.destroy()
 
-   if int(datetime.now().minute) == 28 or int(datetime.now().minute) == 58 :
-      if Mbox(title="WALK",image=walk_image):
-         # print('Stood up')
-         counter_stand_up+=1
-         sleep(61)
-      else:
-         # print('Ignored to stand up')
-         ignored_counter_stand_up+=1
-         sleep(61)
+    def mark_skip():
+        response["clicked"] = "Skip"
+        root.destroy()
 
+    # Buttons
+    btn_done = tk.Button(root, text="Done", command=mark_done, width=10)
+    btn_done.pack(side="left", padx=20, pady=20)
 
+    btn_skip = tk.Button(root, text="Skip", command=mark_skip, width=10)
+    btn_skip.pack(side="right", padx=20, pady=20)
+
+    # Auto-close after 59 seconds
+    root.after(59000, lambda: root.destroy())
+    root.mainloop()
+
+    # Update counters
+    if response["clicked"] == "Done":
+        counters[title]["completed"] += 1
+    else:
+        counters[title]["ignored"] += 1
+
+def reminder_loop():
+    """Main loop that triggers reminders at set intervals without duplicate triggers."""
+    last_triggered_minute = -1
+
+    while True:
+        sleep(1)
+        current_minute = datetime.now().minute
+
+        if current_minute == last_triggered_minute:
+            continue  # Skip duplicate triggers within the same minute
+
+        last_triggered_minute = current_minute  # Update last triggered time
+
+        if current_minute in {0, 30}:   # Sit down reminder every 30 minutes
+            show_reminder("SIT DOWN")
+
+        elif current_minute in {20, 50}:  # Stand up reminder 20 mins after sitting
+            show_reminder("STAND UP")
+
+        elif current_minute in {28, 58}:  # Walk reminder 8 mins after standing
+            show_reminder("WALK")
+
+if __name__ == "__main__":
+    reminder_loop()

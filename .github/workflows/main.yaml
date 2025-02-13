@@ -4,9 +4,6 @@ on:
   push:
     tags:
       - "*"  # Runs only when pushing a version tag (e.g., v1.0.0)
-  pull_request:
-    branches:
-      - "*"
 
 jobs:
   build:
@@ -47,6 +44,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout master branch
+        uses: actions/checkout@v2
+        with:
+          ref: master  # Ensure you're on the master (or main) branch for pushing changes
+
       - name: Update README
         run: |
           sed -i "s#\[sit-stand-reminder.exe.*#[sit-stand-reminder.exe](https://github.com/${{ github.repository }}/releases/download/${{ env.TAG_NAME }}/sit_stand_reminder.exe)#" README.md
@@ -55,3 +57,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update README with ${{ env.TAG_NAME }} release link"
+          branch: master  # Ensure changes are pushed to the correct branch

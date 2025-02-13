@@ -1,41 +1,55 @@
-name: Package Sit-Stand-Reminder with Pyinstaller
+name: Package Sit-Stand-Reminder with PyInstaller
 
 on:
   push:
-    branches:
-      - develop
-      - master
-  pull_request:
-    branches:
-      - "*"
+    tags:
+      - "*"  # Runs only when pushing a version tag (e.g., v1.0.0)
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-    - uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v2
 
-    - name: Package Application
-      uses: JackMcKew/pyinstaller-action-windows@main
-      with:
-        path: .
+      - name: Get tag version
+        id: get_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-    - uses: actions/upload-artifact@v4
-      id: artifact-upload-step
-      with:
-        name: sit-stand-reminder
-        path: ./dist/windows/sit_stand_reminder.exe
-    
-    - name: Update README
-      id: update-readme
-      run: |
-        echo "Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }} and Run ID is ${{ github.run_id }}"
-        sed -i "s#\[sit-stand-reminder.exe.*#[sit-stand-reminder.exe](https://github.com/manojmanivannan/sit-stand-reminder/actions/runs/${{ github.run_id }}/artifacts/${{ steps.artifact-upload-step.outputs.artifact-id }})#" README.md
+      - name: Package Application
+        uses: JackMcKew/pyinstaller-action-windows@main
+        with:
+          path: .
 
-    - uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: Update README
+      - name: Upload Artifact
+        id: artifact-upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: sit-stand-reminder
+          path: ./dist/windows/sit_stand_reminder.exe
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: "${{ env.TAG_NAME }}"
+          body: "Release ${{ env.TAG_NAME }} of Sit-Stand-Reminder."
+          files: ./dist/windows/sit_stand_reminder.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update README
+        run: |
+          sed -i "s#\[sit-stand-reminder.exe.*#[sit-stand-reminder.exe](https://github.com/${{ github.repository }}/releases/download/${{ env.TAG_NAME }}/sit_stand_reminder.exe)#" README.md
+
+      - name: Commit README update
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update README with ${{ env.TAG_NAME }} release link"
+          branch: master  # Ensure changes are pushed to the correct branch

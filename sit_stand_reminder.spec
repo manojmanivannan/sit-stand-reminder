@@ -8,7 +8,7 @@ a = Analysis(
     ['sit_stand_reminder.py'],
     pathex=[],
     binaries=[],
-    datas=[("images/*.png","images")],
+    datas=[("images/*.png","images"),("audio/*.wav","audio")],
     hiddenimports=[],
     hookspath=[],
     # hooksconfig={},

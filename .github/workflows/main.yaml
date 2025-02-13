@@ -2,9 +2,8 @@ name: Package Sit-Stand-Reminder with PyInstaller
 
 on:
   push:
-    branches:
-      - develop
-      - master
+    tags:
+      - "*"  # Runs only when pushing a version tag (e.g., v1.0.0)
   pull_request:
     branches:
       - "*"
@@ -16,7 +15,12 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Get tag version
+        id: get_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Package Application
         uses: JackMcKew/pyinstaller-action-windows@main
@@ -34,9 +38,9 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
-          release_name: "Sit-Stand-Reminder Latest Release"
-          body: "This is the latest build of Sit-Stand-Reminder."
+          tag_name: ${{ env.TAG_NAME }}
+          name: "Sit-Stand-Reminder ${{ env.TAG_NAME }}"
+          body: "Release ${{ env.TAG_NAME }} of Sit-Stand-Reminder."
           files: ./dist/windows/sit_stand_reminder.exe
           draft: false
           prerelease: false
@@ -45,8 +49,9 @@ jobs:
 
       - name: Update README
         run: |
-          sed -i "s#\[sit-stand-reminder.exe.*#[sit-stand-reminder.exe](https://github.com/${{ github.repository }}/releases/latest/download/sit_stand_reminder.exe)#" README.md
+          sed -i "s#\[sit-stand-reminder.exe.*#[sit-stand-reminder.exe](https://github.com/${{ github.repository }}/releases/download/${{ env.TAG_NAME }}/sit_stand_reminder.exe)#" README.md
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Commit README update
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Update README with latest release link"
+          commit_message: "Update README with ${{ env.TAG_NAME }} release link"

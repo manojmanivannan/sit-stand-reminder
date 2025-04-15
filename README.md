@@ -31,3 +31,6 @@ Either case, your exe will be generated under `dist` folder under the project di
 
 Alternatively, you create a .bat file with contents `start "" "path\to\exe\file_name.exe` and create a shortcut of it and place in under your windows start up folder
 
+## Release
+Create new release from [releases page](https://github.com/manojmanivannan/sit-stand-reminder/releases/new)
+

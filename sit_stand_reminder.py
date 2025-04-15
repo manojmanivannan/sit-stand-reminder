@@ -4,6 +4,7 @@ import tkinter as tk
 import winsound
 from datetime import datetime
 from time import sleep
+from tkinter import messagebox
 
 from PIL import Image, ImageTk
 
@@ -146,7 +147,7 @@ def show_reminder(title: str):
                 z = int(walk_entry.get())
                 WALK_FOR = z
                 if x + y + z != 30:
-                    tk.messagebox.showerror("Invalid Input", "X + Y + Z must equal 30.")
+                    messagebox.showerror("Invalid Input", "X + Y + Z must equal 30.")
                     return
                 # Calculate reminder minutes for a 30-min cycle
                 SIT_REMINDER_MINUTES = [0]
@@ -158,7 +159,7 @@ def show_reminder(title: str):
                 WALK_REMINDER_MINUTES += [m + 30 for m in WALK_REMINDER_MINUTES]
                 settings_win.destroy()
             except Exception:
-                tk.messagebox.showerror("Invalid Input", "Please enter valid numbers.")
+                messagebox.showerror("Invalid Input", "Please enter valid numbers.")
 
         tk.Button(settings_win, text="Save", command=save_settings).pack(pady=10)
 

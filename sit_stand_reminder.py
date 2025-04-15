@@ -33,6 +33,17 @@ assets = {
     },
 }
 
+# Reminder minutes
+SIT_FOR = 27
+STAND_FOR = 1
+WALK_FOR = 2
+
+assert SIT_FOR + STAND_FOR + WALK_FOR == 30, "X + Y + Z must equal 30."
+
+SIT_REMINDER_MINUTES = [30 - (SIT_FOR + STAND_FOR + WALK_FOR), 30]
+STAND_REMINDER_MINUTES = [SIT_FOR, 30 + SIT_FOR]
+WALK_REMINDER_MINUTES = [SIT_FOR + STAND_FOR, 30 + SIT_FOR + STAND_FOR]
+
 # Counters for reminders
 counters = {
     "SIT DOWN": {"completed": 0, "ignored": 0},
@@ -92,6 +103,71 @@ def show_reminder(title: str):
         response["clicked"] = "Skip"
         root.destroy()
 
+    def open_settings():
+        settings_win = tk.Toplevel(root)
+        settings_win.title("Reminder Settings")
+        settings_win.geometry("350x250")
+        settings_win.resizable(False, False)
+
+        tk.Label(
+            settings_win,
+            text="Set cycle (must sum to 30 minutes)",
+            font=("Arial", 10, "bold"),
+        ).pack(pady=10)
+
+        tk.Label(settings_win, text="Sit for X minutes:").pack()
+        sit_entry = tk.Entry(settings_win)
+        sit_entry.insert(0, str(SIT_FOR))
+        sit_entry.pack()
+
+        tk.Label(settings_win, text="Stand for Y minutes:").pack()
+        stand_entry = tk.Entry(settings_win)
+        stand_entry.insert(0, str(STAND_FOR))
+        stand_entry.pack()
+
+        tk.Label(settings_win, text="Walk for Z minutes:").pack()
+        walk_entry = tk.Entry(settings_win)
+        walk_entry.insert(0, str(WALK_FOR))
+        walk_entry.pack()
+
+        def save_settings():
+            global \
+                SIT_REMINDER_MINUTES, \
+                STAND_REMINDER_MINUTES, \
+                WALK_REMINDER_MINUTES, \
+                SIT_FOR, \
+                STAND_FOR, \
+                WALK_FOR
+            try:
+                x = int(sit_entry.get())
+                SIT_FOR = x
+                y = int(stand_entry.get())
+                STAND_FOR = y
+                z = int(walk_entry.get())
+                WALK_FOR = z
+                if x + y + z != 30:
+                    tk.messagebox.showerror("Invalid Input", "X + Y + Z must equal 30.")
+                    return
+                # Calculate reminder minutes for a 30-min cycle
+                SIT_REMINDER_MINUTES = [0]
+                STAND_REMINDER_MINUTES = [x]
+                WALK_REMINDER_MINUTES = [x + y]
+                # Repeat for each hour
+                SIT_REMINDER_MINUTES += [m + 30 for m in SIT_REMINDER_MINUTES]
+                STAND_REMINDER_MINUTES += [m + 30 for m in STAND_REMINDER_MINUTES]
+                WALK_REMINDER_MINUTES += [m + 30 for m in WALK_REMINDER_MINUTES]
+                settings_win.destroy()
+            except Exception:
+                tk.messagebox.showerror("Invalid Input", "Please enter valid numbers.")
+
+        tk.Button(settings_win, text="Save", command=save_settings).pack(pady=10)
+
+    # Settings button (top right, gear icon)
+    btn_settings = tk.Button(
+        root, text="\u2699", command=open_settings, font=("Arial", 14), width=2
+    )
+    btn_settings.place(relx=1.0, rely=0, anchor="ne", x=-10, y=10)
+
     # Buttons
     btn_done = tk.Button(root, text="Done", command=mark_done, width=10)
     btn_done.pack(side="left", padx=20, pady=20)
@@ -132,13 +208,13 @@ def reminder_loop():
 
         last_triggered_minute = current_minute  # Update last triggered time
 
-        if current_minute in {0, 30}:  # Sit down reminder every 30 minutes
+        if current_minute in SIT_REMINDER_MINUTES:  # Sit down reminder
             show_reminder("SIT DOWN")
 
-        elif current_minute in {20, 50}:  # Stand up reminder 20 mins after sitting
+        elif current_minute in STAND_REMINDER_MINUTES:  # Stand up reminder
             show_reminder("STAND UP")
 
-        elif current_minute in {28, 58}:  # Walk reminder 8 mins after standing
+        elif current_minute in WALK_REMINDER_MINUTES:  # Walk reminder
             show_reminder("WALK")
 
 

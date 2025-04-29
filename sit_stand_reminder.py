@@ -35,8 +35,8 @@ assets = {
 }
 
 # Reminder minutes
-SIT_FOR = 27
-STAND_FOR = 1
+SIT_FOR = 20
+STAND_FOR = 8
 WALK_FOR = 2
 
 assert SIT_FOR + STAND_FOR + WALK_FOR == 30, "X + Y + Z must equal 30."

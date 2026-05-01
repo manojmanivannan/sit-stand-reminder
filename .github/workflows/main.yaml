@@ -3,53 +3,81 @@ name: Package Sit-Stand-Reminder with PyInstaller
 on:
   push:
     tags:
-      - "*"  # Runs only when pushing a version tag (e.g., v1.0.0)
+      - "*"
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: write
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Build with PyInstaller
+        run: |
+          uv sync
+          uv run pyinstaller --clean sit_stand_reminder.spec
+
+      - name: Set artifact name
+        id: artifact
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            echo "name=sit-stand-reminder-windows" >> $GITHUB_OUTPUT
+            echo "binary=dist/sit_stand_reminder.exe" >> $GITHUB_OUTPUT
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            echo "name=sit-stand-reminder-macos" >> $GITHUB_OUTPUT
+            echo "binary=dist/sit_stand_reminder" >> $GITHUB_OUTPUT
+          else
+            echo "name=sit-stand-reminder-linux" >> $GITHUB_OUTPUT
+            echo "binary=dist/sit_stand_reminder" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact.outputs.name }}
+          path: ${{ steps.artifact.outputs.binary }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sit-stand-reminder-*
+          path: dist-artifacts
+          merge-multiple: true
 
       - name: Get tag version
         id: get_tag
         run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - name: Package Application
-        uses: JackMcKew/pyinstaller-action-windows@main
-        with:
-          path: .
-
-      - name: Upload Artifact
-        id: artifact-upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: sit-stand-reminder
-          path: ./dist/windows/sit_stand_reminder.exe
-
       - name: Create GitHub Release
-        id: create_release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
           name: "${{ env.TAG_NAME }}"
           body: "Release ${{ env.TAG_NAME }} of Sit-Stand-Reminder."
-          files: ./dist/windows/sit_stand_reminder.exe
+          files: |
+            dist-artifacts/*
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update README
-        run: |
-          sed -i "s#\[sit-stand-reminder.exe.*#[sit-stand-reminder.exe](https://github.com/${{ github.repository }}/releases/download/${{ env.TAG_NAME }}/sit_stand_reminder.exe)#" README.md
-
-      - name: Commit README update
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Update README with ${{ env.TAG_NAME }} release link"
-          branch: master  # Ensure changes are pushed to the correct branch

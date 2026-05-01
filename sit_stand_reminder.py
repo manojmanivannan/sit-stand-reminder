@@ -1,7 +1,9 @@
 import os
+import platform
+import shutil
+import subprocess
 import sys
 import tkinter as tk
-import winsound
 from datetime import datetime
 from time import sleep
 from tkinter import messagebox
@@ -35,8 +37,8 @@ assets = {
 }
 
 # Reminder minutes
-SIT_FOR = 20
-STAND_FOR = 8
+SIT_FOR = 15
+STAND_FOR = 13
 WALK_FOR = 2
 
 assert SIT_FOR + STAND_FOR + WALK_FOR == 30, "X + Y + Z must equal 30."
@@ -56,10 +58,36 @@ counters = {
 global_mute = {"mute": False}
 
 
+def _get_platform_player():
+    """Return the appropriate audio playback function for the current platform."""
+    system = platform.system()
+    if system == "Windows":
+        import winsound
+        return lambda path: winsound.PlaySound(path, winsound.SND_FILENAME)
+    elif system == "Darwin":
+        return lambda path: subprocess.run(
+            ["afplay", path], capture_output=True, timeout=10
+        )
+    else:  # Linux and others
+        def _linux_player(path):
+            if shutil.which("paplay"):
+                subprocess.run(["paplay", path], capture_output=True, timeout=10)
+            elif shutil.which("aplay"):
+                subprocess.run(["aplay", path], capture_output=True, timeout=10)
+
+        return _linux_player
+
+
+_PLATFORM_PLAYER = _get_platform_player()
+
+
 def play_audio(title: str):
     """Plays the corresponding audio alert for a given reminder title."""
     if not global_mute["mute"]:
-        winsound.PlaySound(assets[title]["audio"], winsound.SND_FILENAME)
+        try:
+            _PLATFORM_PLAYER(assets[title]["audio"])
+        except Exception:
+            pass  # Audio is non-critical; fail silently if playback fails
 
 
 def show_reminder(title: str):

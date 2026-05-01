@@ -34,6 +34,24 @@ uv sync
 uv run python -m sit_stand_reminder
 ```
 
+**macOS note:** If `uv` installs a standalone CPython that does not include Tcl/Tk, you may see an error like `Cannot find a usable init.tcl`. Install Tcl/Tk via Homebrew and export the paths before running:
+
+```
+brew install tcl-tk
+export TCL_LIBRARY="$(brew --prefix tcl-tk)/lib/tcl9.0"
+export TK_LIBRARY="$(brew --prefix tcl-tk)/lib/tk9.0"
+uv run python -m sit_stand_reminder
+```
+
+End users who download the pre-built release binary do **not** need to install Tcl/Tk.
+
+### Running tests
+
+```
+uv sync
+uv run pytest tests/ -v
+```
+
 ### Building a standalone binary
 
 ```

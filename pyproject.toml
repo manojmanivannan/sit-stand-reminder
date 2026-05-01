@@ -18,4 +18,4 @@ dependencies = [
 sit-stand-reminder = "sit_stand_reminder.main:main"
 
 [dependency-groups]
-dev = ["pyinstaller>=6.0.0"]
+dev = ["pyinstaller>=6.0.0", "pytest>=8.0.0"]

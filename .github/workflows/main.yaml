@@ -26,19 +26,30 @@ jobs:
           uv sync
           uv run pyinstaller --clean sit_stand_reminder.spec
 
+      - name: Rename binary with platform suffix
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            mv dist/sit_stand_reminder.exe dist/sit-stand-reminder-windows.exe
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            mv dist/sit_stand_reminder dist/sit-stand-reminder-macos
+          else
+            mv dist/sit_stand_reminder dist/sit-stand-reminder-linux
+          fi
+
       - name: Set artifact name
         id: artifact
         shell: bash
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             echo "name=sit-stand-reminder-windows" >> $GITHUB_OUTPUT
-            echo "binary=dist/sit_stand_reminder.exe" >> $GITHUB_OUTPUT
+            echo "binary=dist/sit-stand-reminder-windows.exe" >> $GITHUB_OUTPUT
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
             echo "name=sit-stand-reminder-macos" >> $GITHUB_OUTPUT
-            echo "binary=dist/sit_stand_reminder" >> $GITHUB_OUTPUT
+            echo "binary=dist/sit-stand-reminder-macos" >> $GITHUB_OUTPUT
           else
             echo "name=sit-stand-reminder-linux" >> $GITHUB_OUTPUT
-            echo "binary=dist/sit_stand_reminder" >> $GITHUB_OUTPUT
+            echo "binary=dist/sit-stand-reminder-linux" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload Artifact

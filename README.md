@@ -57,7 +57,15 @@ Exec=/path/to/sit_stand_reminder
 
 ### macOS
 
-Add the binary to Login Items in **System Settings → General → Login Items & Extensions**, or create a LaunchAgent plist in `~/Library/LaunchAgents/`.
+Download the `sit-stand-reminder-macos.zip` from releases, extract it, and move the binary to your Applications folder (or wherever you prefer).
+
+**First launch:** macOS Gatekeeper blocks unsigned apps. To bypass this, right-click the binary and select **Open**, then click **Open** again in the dialog. You only need to do this once. Alternatively, run this in Terminal:
+
+```
+xattr -d com.apple.quarantine /path/to/sit-stand-reminder-macos
+```
+
+For autostart, add the binary to Login Items in **System Settings → General → Login Items & Extensions**, or create a LaunchAgent plist in `~/Library/LaunchAgents/`.
 
 ## Release
 

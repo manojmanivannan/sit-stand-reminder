@@ -26,13 +26,13 @@ jobs:
           uv sync
           uv run pyinstaller --clean sit_stand_reminder.spec
 
-      - name: Rename binary with platform suffix
+      - name: Package binary for distribution
         shell: bash
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             mv dist/sit_stand_reminder.exe dist/sit-stand-reminder-windows.exe
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            mv dist/sit_stand_reminder dist/sit-stand-reminder-macos
+            cd dist && zip sit-stand-reminder-macos.zip sit_stand_reminder
           else
             mv dist/sit_stand_reminder dist/sit-stand-reminder-linux
           fi
@@ -46,7 +46,7 @@ jobs:
             echo "binary=dist/sit-stand-reminder-windows.exe" >> $GITHUB_OUTPUT
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
             echo "name=sit-stand-reminder-macos" >> $GITHUB_OUTPUT
-            echo "binary=dist/sit-stand-reminder-macos" >> $GITHUB_OUTPUT
+            echo "binary=dist/sit-stand-reminder-macos.zip" >> $GITHUB_OUTPUT
           else
             echo "name=sit-stand-reminder-linux" >> $GITHUB_OUTPUT
             echo "binary=dist/sit-stand-reminder-linux" >> $GITHUB_OUTPUT

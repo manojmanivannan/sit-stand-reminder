@@ -1,17 +1,18 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_all
 
 block_cipher = None
 
+ttkbootstrap_datas, ttkbootstrap_binaries, ttkbootstrap_hiddenimports = collect_all("ttkbootstrap")
 
 a = Analysis(
-    ['sit_stand_reminder.py'],
+    ["launch.py"],
     pathex=[],
-    binaries=[],
-    datas=[("images/*.png","images"),("audio/*.wav","audio")],
-    hiddenimports=[],
+    binaries=ttkbootstrap_binaries,
+    datas=[("images/*.png", "images"), ("audio/*.wav", "audio")] + ttkbootstrap_datas,
+    hiddenimports=["PIL", "PIL.Image", "PIL.ImageTk"] + ttkbootstrap_hiddenimports,
     hookspath=[],
-    # hooksconfig={},
     runtime_hooks=[],
     excludes=[],
     win_no_prefer_redirects=False,
@@ -19,6 +20,7 @@ a = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
+
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(
@@ -28,7 +30,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='sit_stand_reminder',
+    name="sit_stand_reminder",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
